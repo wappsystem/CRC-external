@@ -1,0 +1,115 @@
+<section>
+      VmInclude:__BASE__/vmiis/Common-Code/frame/excel.html
+</section>
+<script>
+    function F__ID(){
+        //-------------------------------------
+        //---------------------------
+        g_vm[__ID].db_pid='20003941';
+        var site_pid='20007829';
+        //---------------------------
+        var fields="Participant<br>No|UID,Participant|Short_form_name,Full Name|Name,Staff List|UID,Project List|UID,ABN|ABN,Address|Address,Primary Contact|Primary_Contact,Primary Login Name|Primary_login,Primary Contact Email|Primary_Email,Secondary Contact|Secondary_Contact,Secondary Login Name|Secondary_login,Secondary Contact Email|Secondary_Email,Organisation Type|Organisation_Type,Sub Type|Sub_Type,SME&#44; International or Individual|SME_int_ind,Is End User|End_User,Participant Type|Participant_Type,Cash|Cash_Contributer,In Kind Staff|Inkind_Staff_Contributer,In Kind Non-Staff|Inkind_Non_Staff_Contributer";
+        //fields+=",Submit Date|DateTime,Submitted by|Author";
+        //-------------------------------------
+        VmInclude:__BASE__/vmiis/Common-Code/frame/excel.js
+        VmInclude:__BASE__/vmiis/Common-Code/style/ease-in-out.js
+        //-------------------------------------
+        columns[0]={data:'UID', readOnly:true};
+        columns[3]={data:'UID', width:80,renderer:function(instance, td, row, col, prop, value, cellProperties){
+            if(value===null){ td.innerHTML=""; return td;}
+            td.innerHTML="<u style='cursor:pointer'>Staff...</u>";
+            $(td).find('u').on('click',function(){
+                $(this).vm6('load_module','20007409',g_vm.root_layout_content_slot,{puid:value});
+            });
+            return td;
+        }};
+        columns[4]={data:'UID',width:100,renderer:function(instance, td, row, col, prop, value, cellProperties){
+            if(value===null){ td.innerHTML=""; return td;}
+            td.innerHTML="<u style='cursor:pointer'>Projects...</u>";
+            $(td).find('u').on('click',function(){
+                $(this).vm6('load_module','20007811',g_vm.root_layout_content_slot,{puid:value});
+            });
+            return td;
+        }};
+
+        columns[13]={data:'Organisation_Type',type: 'dropdown',source: ['','State Government','Industry Private','University','Australian Government','Other'],trimDropdown:false };
+        columns[15]={data:'SME_int_ind',type: 'dropdown',source: ['','SME','International','Individual','N/A'],trimDropdown:false };
+        columns[16]={data:'End_User',type: 'dropdown',source: ['','Yes','No'],trimDropdown:false };
+        columns[17]={data:'Participant_Type',type: 'dropdown',source: ['','Essential','Third Party','Other','Management'],trimDropdown:false };
+        columns[18]={data:'Cash_Contributer',type:'checkbox'};
+        columns[19]={data:'Inkind_Staff_Contributer',type:'checkbox'};
+        columns[20]={data:'Inkind_Non_Staff_Contributer',type:'checkbox'};
+        //-------------------------------------
+        var before_submit=function(record,dbv){
+          if(record.Short_form_name!=='') dbv.S2=record.Short_form_name;
+              return true;
+        };
+        //-------------------------------------
+        var pre_data_process=function (){
+          for(var i=0;i<records.length;i++){
+
+              //if(records[i].Address.length>0) records[i].Address=records[i].Address.substring(0,records[i].Address.indexOf('\r'))+'...';
+              records[i].Cash_Contributer=cv(records[i].Cash_Contributer);
+              records[i].Inkind_Staff_Contributer=cv(records[i].Inkind_Staff_Contributer);
+              records[i].Inkind_Non_Staff_Contributer=cv(records[i].Inkind_Non_Staff_Contributer);
+          }
+        };
+        //-------------------------------------
+        var cv=function(v){
+          if(v==="True") return true;
+           else if(v==='1') return true;
+           else if(v==='on') return true;
+           else return false;
+        };
+        //-------------------------------------
+        var new_pre_data_process=function(){
+            pre_data_process();
+            if($vm.vm['__ID'].car_number!==undefined) $("#excel__ID").handsontable("setDataAtCell", 0, 0, $vm.vm['__ID'].car_number+' '+$vm.vm['__ID'].car_name);
+            if($vm.vm['__ID'].date!==undefined) $("#excel__ID").handsontable("setDataAtCell", 0, 1, $vm.vm['__ID'].date);
+            if($vm.vm['__ID'].time!==undefined) $("#excel__ID").handsontable("setDataAtCell", 0, 2, $vm.vm['__ID'].time);
+            $("#excel__ID").handsontable("setDataAtCell", 0, 3, 0.5);
+            var hot=$('#excel__ID').handsontable('getInstance');
+            hot.render();
+        };
+        //-------------------------------------
+        var sql_where="";
+        $('#D__ID').on('load',function(){
+          var sites="";
+          var sql="select List=@('Site_List') from [FORM-"+site_pid+"] where @('Login_Name')="+"'"+g_user+"'";
+          var req_data={cmd:'query_records',sql:sql};
+          jQuery.ajaxSetup({async:false});
+          $VmAPI.request({data:req_data,callback:function(res){
+            if(res.records.length>0){
+                sites=res.records[0].List.replace(/\r/g,'\n').replace(/\n\n/g,'\n').replace(/\n/g,',');
+                  $('#part__ID').text(sites);
+              }
+          }});
+          jQuery.ajaxSetup({async:true});
+            sql_where=$vm.vm['__ID'].op.sql_where;
+            $('#multi__ID').show();
+            if($vm.vm['__ID'].op.single===true) $('#multi__ID').hide();
+            grid_data();
+        })
+        //-------------------------------------
+        var grid_process=function(res){
+            if($vm.vm['__ID'].op.new!==undefined){
+                $vm.vm['__ID'].op.new=undefined;
+                $('#new__ID').triggerHandler('click');
+                $("#excel__ID").handsontable("setDataAtCell", 0, 0, $vm.vm['__ID'].op.car_number+' '+$vm.vm['__ID'].op.car_name);
+                $("#excel__ID").handsontable("setDataAtCell", 0, 1, $vm.vm['__ID'].op.date);
+                $("#excel__ID").handsontable("setDataAtCell", 0, 2, $vm.vm['__ID'].op.time);
+                $("#excel__ID").handsontable("render");
+            }
+        };
+        //-------------------------------------
+        $('#D__ID').on('load',function(){
+        });
+    }
+</script>
+<style>
+    VmInclude:__BASE__/vmiis/Common-Code/toolbar/toolbar_for_excel.css
+    #D__ID{
+        font-size:14px;
+        font-family: Helvetica, Arial, sans-serif;
+    }
+</style>

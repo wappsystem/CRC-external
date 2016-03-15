@@ -1,0 +1,285 @@
+<section>
+    <div id=toolbar__ID>
+        <a id=back__ID>Back</a><span class=tab__ID></span><span id=name__ID></span>
+    </div>
+    <div style='clear:left;'>
+      <div id='nav__ID'><label id=part__ID style='font-size:15pt'>Organisation</label>
+          <br><span><b>Staff Inkind Contribution</b></span>
+           <ul>
+             <li data-name=contribution_staff_inkind_actual>Add/Modify/Comfirm</li>
+             <li data-name=contribution_staff_inkind_actual_view>View All</li>
+          </ul>
+          <br>
+          <table id=table_grid__ID style='width:500px;'>
+             <col class=colA /><col /></colgroup>
+             <tr><td colspan=4 class='header__ID'>Overview of Staff In Kind Contributions</td></tr>
+            <tr><th>Financial Year</th><th>Committed</th><th>Actual</th><th>(Shortfall)/Surplus</th></tr>
+            <tr><th>FY 13/14</th><td><label id=fy1314_committed___ID></label></td><td><label id=fy1314_actual___ID></label></td><td><label id=fy1314_sum___ID></label></td></tr>
+            <tr><th>FY 14/15</td><td><label id=fy1415_committed___ID></label></td><td><label id=fy1415_actual___ID></label></td><td><label id=fy1415_sum___ID></label></td></tr>
+            <tr><th>FY 15/16</td><td><label id=fy1516_committed___ID></label></td><td><label id=fy1516_actual___ID></label></td><td><label id=fy1516_sum___ID></label></td></tr>
+            <tr><th>FY 16/17</td><td><label id=fy1617_committed___ID></label></td><td><label id=fy1617_actual___ID></label></td><td><label id=fy1617_sum___ID></label></td></tr>
+            <tr><th>FY 17/18</td><td><label id=fy1718_committed___ID></label></td><td><label id=fy1718_actual___ID></label></td><td><label id=fy1718_sum___ID></label></td></tr>
+            <tr><th>FY 18/19</td><td><label id=fy1819_committed___ID></label></td><td><label id=fy1819_actual___ID></label></td><td><label id=fy1819_sum___ID></label></td></tr>
+            <tr><th>FY 19/20</td><td><label id=fy1920_committed___ID></label></td><td><label id=fy1920_actual___ID></label></td><td><label id=fy1920_sum___ID></label></td></tr>
+            <tr><th>Total</td><td><label id=total_committed___ID></label></td><td><label id=total_actual___ID></label></td><td><label id=total_sum___ID></label></td></tr>
+        </table>
+        <br>
+        <table id=table_grid__ID style='width:500px;'>
+           <col class=colA /><col /></colgroup>
+           <tr><td colspan=3 class='header__ID' id=summary_quarter__ID></td></tr>
+          <tr><th class=thl></th><th>FTE</th><th>Amount($)</th></tr>
+          <tr><th class=thl>Program Lead/Senior Manager</th><td><label id=fte_program_leader__ID></label></td><td><label id=ik_program_leader__ID></label></td></td></tr>
+          <tr><th class=thl>Key Researcher/ Manager/ Project/ Theme Leader</td><td><label id=fte_key_researcher_leader__ID></label></td><td><label id=ik_key_researcher_leader__ID></label></td></tr>
+          <tr><th class=thl>Researcher/ Professional</td><td><label id=fte_researcher__ID></label></td><td><label id=ik_researcher__ID></label></td></tr>
+          <tr><th class=thl>Other Support Staff</td><td><label id=fte_other__ID></label></td><td><label id=ik_other__ID></label></td></tr>
+          <tr><th class=thl>Total</td><td><label id=fte_total__ID></label></td><td><label id=ik_total__ID></label></td></tr>
+      </table>
+        </div>
+        <div id='nav__ID'>
+          <span>Non-Staff Inkind Contribution</span>
+          <ul>
+            <li data-name=contribution_non_staff_inkind_equipment>Equipment - Add/Modify/Comfirm</li>
+            <li data-name=contribution_non_staff_inkind_equipment_all>Equipment - View All</li>
+            <li data-name=contribution_non_staff_inkind_office>Office - Add/Modify/Comfirm</li>
+            <li data-name=contribution_non_staff_inkind_office_all>Office - View All</li>
+            <li data-name=contribution_non_staff_inkind_other>Other - Add/Modify/Comfirm</li>
+            <li data-name=contribution_non_staff_inkind_other_all>Other - View All</li>
+          </ul>
+          <br>
+          <span>Setup</span>
+          <ul>
+              <li data-name=car>Add/Remove Cars</li>
+              <li data-name=upload_file>Upload files</li>
+          </ul>
+          <br>
+          <br>
+        </div>
+    </div>
+</section>
+<script>
+      function F__ID(){
+            //---------------------------------------------
+            //click, permission process
+            var content_slot=$vm.root_layout_content_slot;
+            VmInclude:__BASE__/vmiis/Common-Code/navigation/link_process.js
+            VmInclude:__BASE__/vmiis/Common-Code/toolbar/back.js
+            VmInclude:__BASE__/vmiis/Common-Code/style/ease-in-out.js
+            //---------------------------------------------
+            $('#name__ID').text('Contribution');
+            //---------------------------------------------
+            var site_pid='20007829';
+            $('#D__ID').on('load',function(){
+                set_permissions();
+                var sites="";
+                var list_uid="";
+                var sql="select List=@('Site_List') from [FORM-"+site_pid+"] where @('Login_Name')="+"'"+g_user+"'";
+                var req_data={cmd:'query_records',sql:sql};
+                jQuery.ajaxSetup({async:false});
+                $VmAPI.request({data:req_data,callback:function(res){
+        	        if(res.records.length>0){
+        	            sites=res.records[0].List.replace(/\r/g,'\n').replace(/\n\n/g,'\n').replace(/\n/g,',');
+                      $('#part__ID').text('Organisation: '+sites);
+                    }
+                }});
+                var sqlA="with tb as (select FY=S1,V2 from [TABLE-20004766] where S3='"+sites+"') ";
+                sqlA+=" ,tb2 as (select FY=S1,IKP=Cast(dbo.F(Information,'Inkind_Program_Leader') as numeric),IKK=Cast(dbo.F(Information,'Inkind_Key_Researcher') as numeric),IKR=Cast(dbo.F(Information,'Inkind_Researcher') as numeric),IKO=Cast(dbo.F(Information,'Inkind_Support_Staff') as numeric)  from [TABLE-20004761] where S3='"+sites+"') "
+                sqlA+=" ,outtb1 as (select FYa=FY, Actual=Convert(varchar, Sum(V2)) from tb group by FY )";
+                sqlA+=" ,outtb2 as (select FYc=FY, Committed=Convert(varchar, Sum(IKP)+Sum(IKK)+Sum(IKR)+Sum(IKO)) from tb2 group by FY)";
+//                sqlA+=" select FY=FYa,Actual=FORMAT(cast(ISNULL(Actual,0) as float),'#,0'), Committed=FORMAT(cast(ISNULL(Committed,0) as float),'#,0'),Diff=FORMAT(Cast(ISNULL(Actual,0) as float)-Cast(ISNULL(Committed,0) as float),'#,0') from outtb1 left join outtb2 on FYa=FYc";
+                sqlA+=" select FY=FYa,Actual, Committed from outtb1 left join outtb2 on FYa=FYc";
+                var req_data={cmd:'query_records',sql:sqlA};
+                //var actual=['0','0','0','0','0','0','0'];
+                $VmAPI.request({data:req_data,callback:function(res){
+                  var total_actual=0;
+                  var total_comm=0;
+                  var total_diff=0;
+                  for(i=0;i<res.records.length;i++){
+                    var actual=res.records[i].Actual;
+                    var comm=res.records[i].Committed;
+                    if (actual==='')actual=0;if(comm==='')comm=0;
+                    var diff=parseFloat(actual)-parseFloat(comm);
+                    total_actual+=parseFloat(actual);
+                    total_comm+=parseFloat(comm);
+                    total_diff+=parseFloat(diff);
+                    switch(res.records[i].FY){
+                      case 'FY1314':
+                          $('#fy1314_actual___ID').text(parseFloat(actual, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          $('#fy1314_committed___ID').text(parseFloat(comm, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          if(diff>=0) $('#fy1314_sum___ID').text(parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          else {diff=-diff;$('#fy1314_sum___ID').text('(' + parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00',')').toString())};
+                      break;
+                      case 'FY1415':
+                          $('#fy1415_actual___ID').text(parseFloat(actual, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          $('#fy1415_committed___ID').text(parseFloat(comm, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          if(diff>=0) $('#fy1415_sum___ID').text(parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          else {diff=-diff;$('#fy1415_sum___ID').text('(' + parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00',')').toString())};
+                      break;
+                      case 'FY1516':
+                          $('#fy1516_actual___ID').text(parseFloat(actual, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          $('#fy1516_committed___ID').text(parseFloat(comm, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          if(diff>=0) $('#fy1516_sum___ID').text(parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          else {diff=-diff;$('#fy1516_sum___ID').text('(' + parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00',')').toString())};
+                      break;
+                      case 'FY1617':
+                          $('#fy1617_actual___ID').text(parseFloat(actual, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          $('#fy1617_committed___ID').text(parseFloat(comm, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          if(diff>=0) $('#fy1617_sum___ID').text(parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          else {diff=-diff;$('#fy1617_sum___ID').text('(' + parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00',')').toString())};
+                      break;
+                      case 'FY1718':
+                          $('#fy1718_actual___ID').text(parseFloat(actual, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          $('#fy1718_committed___ID').text(parseFloat(comm, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          if(diff>=0) $('#fy1718_sum___ID').text(parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          else {diff=-diff;$('#fy1718_sum___ID').text('(' + parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00',')').toString())};
+                      break;
+                      case 'FY1819':
+                          $('#fy1819_actual___ID').text(parseFloat(actual, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          $('#fy1819_committed___ID').text(parseFloat(comm, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          if(diff>=0) $('#fy1819_sum___ID').text(parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          else {diff=-diff;$('#fy1819_sum___ID').text('(' + parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00',')').toString())};
+                      break;
+                      case 'FY1920':
+                          $('#fy1920_actual___ID').text(parseFloat(actual, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          $('#fy1920_committed___ID').text(parseFloat(comm, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          if(diff>=0) $('#fy1920_sum___ID').text(parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                          else {diff=-diff;$('#fy1920_sum___ID').text('(' + parseFloat(diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00',')').toString())};
+                      break;
+                    }
+                  }
+                  $('#total_actual___ID').text(parseFloat(total_actual, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                  $('#total_committed___ID').text(parseFloat(total_comm, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                  if(total_diff>=0) $('#total_sum___ID').text(parseFloat(total_diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                  else {total_diff=-total_diff;$('#total_sum___ID').text('(' + parseFloat(total_diff, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00',')').toString())};
+                }});
+                var d= new Date();
+                var fy='';
+                var quarter='';
+                var year1='';
+                var year2='';
+                var month=d.getMonth()+1;
+                switch(month){
+                  case 1,2,3: quarter='1';year1=d.getFullYear();year2=year1-1;year1=year1.toString();year2=year2.toString();fy='FY'+year2.substr(year2.length - 2)+year1.substr(year1.length - 2);break;
+                  case 4,5,6: quarter='1';year1=d.getFullYear();year2=year1-1;year1=year1.toString();year2=year2.toString();fy='FY'+year2.substr(year2.length - 2)+year1.substr(year1.length - 2);break;
+                  case 7,8,9: quarter='1';year1=d.getFullYear();year2=year1+1;year1=year1.toString();year2=year2.toString();fy='FY'+year1.substr(year1.length - 2)+year2.substr(year2.length - 2);break;
+                  case 10,11,12: quarter='1';year1=d.getFullYear();year2=year1+1;year1=year1.toString();year2=year2.toString();fy='FY'+year1.substr(year1.length - 2)+year2.substr(year2.length - 2);break;
+                }
+                var sqlB="with tb as (select FY=S1,Q=S2,IK=V2,FTE=V1,Rate=dbo.F(Information,'Rate') "
+                sqlB+="  from [TABLE-20004766] where S3='"+sites+"' and S1=@S2 and S2=@S3) ";
+                sqlB+="select FY, Q, Rate, IK=Sum(IK),FTE=Sum(FTE) ";
+                sqlB+=" from tb group by FY,Q,Rate ";
+                var req_data={cmd:'query_records',sql:sqlB,s2:fy,s3:quarter};
+                var total_ik=0;
+                var total_fte=0;
+                $VmAPI.request({data:req_data,callback:function(res){
+                    for(i=0;i<res.records.length;i++){
+                      var ik=res.records[i].IK;
+                      var fte=res.records[i].FTE;
+                      if (ik==='')ik=0;if(fte==='')fte=0;
+                      total_ik+=parseFloat(ik);
+                      total_fte+=parseFloat(fte);
+                      switch(res.records[i].Rate){
+                        case 'Program Leader':
+                            $('#fte_program_leader__ID').text(fte.toString());
+                            $('#ik_program_leader__ID').text(parseFloat(ik, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                        break;
+                        case 'Key Researcher':
+                            $('#fte_key_researcher_leader__ID').text(fte.toString());
+                            $('#ik_key_researcher_leader__ID').text(parseFloat(ik, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                        break;
+                        case 'Researcher':
+                            $('#fte_researcher__ID').text(fte.toString());
+                            $('#ik_researcher__ID').text(parseFloat(ik, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                        break;
+                        case 'Other':
+                            $('#fte_other__ID').text(fte.toString());
+                            $('#ik_other__ID').text(parseFloat(ik, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                        break;
+                      }
+                  }
+                }});
+                $('#fte_total__ID').text(total_fte.toString());
+                $('#ik_total__ID').text(parseFloat(total_ik, 10).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,").replace('.00','').toString());
+                $('#summary_quarter__ID').text('Summary for '+fy+' quarter '+quarter);
+                jQuery.ajaxSetup({async:true});
+          });
+      }
+</script>
+<style>
+    #D__ID,#pvdiv__ID{
+        font-size:10pt;
+        font-family: Verdana,Helvetica,Arial,sans-serif;;
+        background: url("__BASE__/vmiis/SaaS/images/texture.png");
+    }
+    #D__ID{
+      /*background-color:#fff;*/
+    }
+    #toolbar__ID *{
+      margin:0;
+      padding:0;
+      vertical-align:middle;
+    }
+    #toolbar__ID{
+      padding:6px;
+      background-color:#ddd;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size:11pt;
+      border-bottom: 1px solid #aaa;
+    }
+    #toolbar__ID a{
+      background-color:#697b7b;
+      border:0px solid #18ab29;
+      display:inline-block;
+      cursor:pointer;
+      color:#ffffff;
+      font: 9pt/30px Arial;
+      padding-left:15px;
+      padding-right:15px;
+      text-decoration:none;
+      text-shadow:1px 1px 0px #2f6627;
+      -moz-border-radius:8px;
+      -webkit-border-radius:8px;
+      border-radius:8px;
+      transition: all 0.2s ease-in-out;
+    }
+    #toolbar__ID a:hover {
+    background-color:#525959;
+    }
+    #nav__ID{
+      padding:6px 26px 6px 6px;
+      color: #202727;
+      display:table-cell;
+    }
+    #nav__ID li{
+      cursor:pointer;
+    }
+    #nav__ID span{
+      margin:3px;
+      display:block;
+      font-weight:700;
+    }
+    #not_allowed__ID{
+      color:#888!Important;
+      cursor:not-allowed!Important;
+    }
+    #nav__ID a{
+      -moz-transition: all 0.2s ease-in-out;
+      -o-transition: all 0.2s ease-in-out;
+      -webkit-transition: all 0.2s ease-in-out;
+      transition: all 0.2s ease-in-out;
+    }
+    #nav__ID a:hover {
+      background: #687A7B;
+      color: #fff;
+      cursor:pointer;
+    }
+    .tab__ID{
+      width:30px;
+      display:inline-block;
+    }
+    #table_grid__ID{	width:100%; border: 1px #aaaaaa solid; font-size:9pt; font-family:Verdana; border-spacing: 0px;border-collapse: collapse;}
+    #table_grid__ID th{ border: 1px solid #ddd; padding:2px; margin:1px; text-align:center; background-color:#eee;/*#9ab6da;*/ white-space: nowrap;}
+    #table_grid__ID td{ border: 1px solid #ddd; padding:2px; margin:0px; }
+    #table_grid__ID tr:hover {background-color: #ddd;}
+    .header__ID {text-align:center!Important;font-size:12pt;padding:12px!Important;}
+    .thl{text-align: left!important}
+</style>

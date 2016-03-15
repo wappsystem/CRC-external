@@ -1,0 +1,249 @@
+<section>
+      VmInclude:__BASE__/wappsystem/CRC-external/modules/excel.html
+</section>
+<script>
+    function F__ID(){
+        $('#pageheader__ID').text('Staff Inkind Contribution - Add/Modify/Confirm');
+        //-------------------------------------
+      //  g_vm[__ID].db_pid='20004766';
+        participant_pid='20003941';
+        project_pid='20003921';
+        Staff_pid='20004600';
+        rate_pid='20004763';
+        var site_pid='20007829';
+
+        var fields="Participant<br>No|Participant_uid,Participant|Participant,Project<br>No|Project_ID_uid,Project|Project_ID,Financial Year|Financial_Year,Quarter,Staff<br>No|Staff_uid,Staff,Rate Level|Rate,FTE,FTE Rate|Rate_Dollar,Quarterly<br>Inkind Value|Inkind,Confirmed,Updated_by,Updated_date";
+        //fields+=",Submit Date|DateTime,Submitted by|Author,Hidden|Modified";";
+        //-------------------------------------
+        VmInclude:__BASE__/vmiis/Common-Code/frame/excel.js
+        VmInclude:__BASE__/vmiis/Common-Code/style/ease-in-out.js
+        var before_change=function(changes,source){
+            process_fte(changes,source,'Rate level',8,'FTE_rate',10,'Inkind',11,'FTE',9);
+        };
+
+        columns[0]={data:'Participant_uid', readOnly:true,width:50};
+        columns[1]={data:'Participant',type: 'autocomplete',trimDropdown:false,source:function (query, process){
+            var sqlA="with tb as (select Value=UID,Item=Convert(varchar,UID)+'-'+@('Short_form_name') from [FORM-"+participant_pid+"] where @('Short_form_name') like '%"+sites+"%')";
+            sqlA+=" select top 10 Item,Value from tb where Item like '%'+@S1+'%' ";
+            $vm.read_record_auto({query:query,process:process,sql:sqlA,minLength:0,callback:function(nv){auto_uid=nv;}});
+        }};
+        columns[2]={data:'Project_ID_uid', readOnly:true,width:50};
+        columns[3]={data:'Project_ID',type: 'autocomplete',trimDropdown:false,source:function (query, process){
+            var sqlB="with tb as (select Value=UID,Item=Convert(varchar,UID)+'-'+@('Project_ID') from [FORM-"+project_pid+"])";
+            sqlB+=" select top 10 Item,Value from tb where Item like '%'+@S1+'%' ";
+            $vm.read_record_auto({query:query,process:process,sql:sqlB,minLength:0,callback:function(nv){auto_uid=nv;}});
+        }};
+        columns[4]={data:'Financial_Year',type:'dropdown',trimDropdown:false,source:[
+            "FY1314","FY1415","FY1516","FY1617","FY1718","FY1819","FY1920"
+        ]};
+        columns[5]={data:'Quarter',type:'dropdown',trimDropdown:false,source:[
+            "1","2","3","4"
+        ]};
+        columns[6]={data:'Staff_uid', readOnly:true,width:50};
+        columns[7]={data:'Staff',type: 'autocomplete',trimDropdown:false,source:function (query, process){
+            //-----------------
+            var part_uid='0';
+            //-----------------
+            var array = $("#excel__ID").handsontable('getSelected').toString().split(',');
+            var row, col = 0;
+            if (array.length > 0) {
+                row=parseInt(array[2]);
+                col=parseInt(array[3]);
+                var cellValue = $('#excel__ID').handsontable('getDataAtCell', row, col-7);
+                //alert(cellValue)
+                if(cellValue!=='null') part_uid=cellValue;
+            }
+            //-----------------
+            var sqlC="with tb as (select Value=UID,Item=Convert(varchar,UID)+'-'+@('First_name')+' '+@('Last_name') from [FORM-"+Staff_pid+"] where puid="+part_uid+")  select top 10 Item from tb where Item like '%'+@S1+'%' ";
+            $vm.read_record_auto({query:query,process:process,sql:sqlC,minLength:0,callback:function(nv){auto_uid=nv;}});
+        }};
+        columns[8]={data:'Rate', readOnly:true};
+        var FTEValidatorRegexp = /^(1.0|0.\d{1})$/;
+        columns[9]={data: 'FTE', validator: FTEValidatorRegexp, allowInvalid: true};
+//        columns[9]={data:'FTE', type:'numeric',format:'0.0',regex:'/^d{1}$'};
+        columns[10]={data:'Rate_Dollar',type:'numeric',format:'$ 0,000', readOnly:true};
+        columns[11]={data:'Inkind',type:'numeric',format:'$ 0,000', readOnly:true};
+        columns[12]={data:'Confirmed',type:'checkbox'};
+        columns[13]={data:'Updated_by', readOnly:true};
+        columns[14]={data:'Updated_date', readOnly:true};
+        //-------------------------------------
+        var after_change=function(record,column){
+            var item="";
+            if(column=='Participant'){
+                items=record.Participant.split("-");
+                if(items.length>1){
+                    record.Participant_uid=items[0];
+                    record.Participant=items[1];
+                    for (i=2;i<items.length;i++){
+                        record.Participant+='-'+items[i];
+                    }
+                }
+                else{
+                    record.Participant_uid='';
+                    record.Participant='';
+                }
+                $('#excel__ID').handsontable('render');
+            }
+            if(column=='Project_ID'){
+                items=record.Project_ID.split("-");
+                if(items.length>1){
+                    record.Project_ID_uid=items[0];
+                    record.Project_ID=items[1];
+                    for (i=2;i<items.length;i++){
+                        record.Project_ID+='-'+items[i];
+                    }
+                }
+                else{
+                    record.Project_ID_uid='';
+                    record.Project_ID='';
+                }
+                $('#excel__ID').handsontable('render');
+            }
+            if(column=='Staff'){
+                items=record.Staff.split("-");
+                if(items.length>1){
+                    record.Staff_uid=items[0];
+                    record.Staff=items[1];
+                    for (i=2;i<items.length;i++){
+                        record.Staff+='-'+items[i];
+                    }
+                }
+                else{
+                    record.Staff_uid='';
+                    record.Staff='';
+                }
+                $('#excel__ID').handsontable('render');
+            }
+            if(column=='FTE'){
+                if(record.FTE_Rate!=='') record.Inkind=parseFloat(record.FTE)*parseFloat(record.Rate_Dollar)/4;
+                $('#excel__ID').handsontable('render');
+            }
+            if(column=='Confirmed'){
+                if(record.Confirmed){
+                  var d = new Date();
+                    var month = d.getMonth()+1;
+                    var day = d.getDate();
+                    var output = d.getFullYear() + '/' +(month<10 ? '0' : '') + month + '/' +(day<10 ? '0' : '') + day;
+                  record.Updated_by=g_user;
+                  record.Updated_date=output;
+                }
+                else{
+                  record.Updated_by='';
+                  record.Updated_date='';
+                }
+                $('#excel__ID').handsontable('render');
+            }
+        };
+            //-------------------------------------
+        var pre_data_process=function (){
+            for(var i=0;i<records.length;i++){
+                records[i].Locked=cv(records[i].Locked);
+                records[i].Confirmed=cv(records[i].Confirmed);
+            }
+        };
+        //-------------------------------------
+        var cv=function(v){
+            if(v==="True") return true;
+            else if(v==='1') return true;
+            else if(v==='on') return true;
+            else return false;
+        };
+
+        //-------------------------------------
+        function process_fte(changes,source,Rate_level,iRL,FTE_rate,iFR,Inkind,iIK,FTE,iF){
+          if(source=="edit"){
+                var I=changes[0][0];
+                var p=changes[0][1];
+                var v=changes[0][3];
+                if(p==='Staff'){
+                    var hot = $('#excel__ID').handsontable('getInstance');
+                    var items=v.split('-');
+                    var rate='';
+                    var sql="select Information from [FORM-"+Staff_pid+"] where uid=@I1";
+                    var req={cmd:'data2',action:'records',sql:sql,i1:items[0]};
+                    jQuery.ajaxSetup({async:false});
+                    $(this).vm7('request',req,function(res_s){
+                        rate=res_s.records[0].Rate;
+                    });
+                    sql="select top(1) Information from [FORM-"+rate_pid+"]";
+                    req={cmd:'data2',action:'records',sql:sql};
+                    $(this).vm7('request',req,function(res_r){
+                        switch(rate){
+                            case "Program Leader": hot.setDataAtCell(I, iRL,rate,''); hot.setDataAtCell(I, iFR,res_r.records[0].Rate_Programme_Leader,''); break;
+                            case "Key Researcher": hot.setDataAtCell(I, iRL,rate,''); hot.setDataAtCell(I, iFR,res_r.records[0].Rate_Key_Researcher,''); break;
+                            case "Researcher": hot.setDataAtCell(I, iRL,rate,''); hot.setDataAtCell(I, iFR,res_r.records[0].Rate_Researcher,''); break;
+                            case "Other": hot.setDataAtCell(I, iRL,rate,''); hot.setDataAtCell(I, iFR,res_r.records[0].Rate_Support,''); break;
+                            case "Student": hot.setDataAtCell(I, iRL,rate,''); hot.setDataAtCell(I, iFR,res_r.records[0].Rate_Student,''); break;
+                        }
+                    });
+                    jQuery.ajaxSetup({async:true});
+                }
+          }
+        }
+        //-------------------------------------
+        var before_submit=function(record,dbv){
+            //For import from template
+            if(record.Rate_Dollar===undefined){
+                record.FTE=record.FTE.replace(/ /g,'').replace(/%/g,'');
+                if(parseFloat(record.FTE)>1) record.FTE=(parseFloat(record.FTE)/100).toString();
+                jQuery.ajaxSetup({async:false});
+                sql="select top(1) Information from [FORM-"+rate_pid+"]";
+                req={cmd:'data2',action:'records',sql:sql};
+                $(this).vm7('request',req,function(res_r){
+                    switch(record.Rate){
+                        case "Program Leader": record.Rate_Dollar=res_r.records[0].Rate_Programme_Leader;record.Inkind=(parseFloat(record.Rate_Dollar)*parseFloat(record.FTE)/4).toFixed(0); break;
+                        case "Key Researcher": record.Rate_Dollar=res_r.records[0].Rate_Key_Researcher;record.Inkind=(parseFloat(record.Rate_Dollar)*parseFloat(record.FTE)/4).toFixed(0); break;
+                        case "Researcher": record.Rate_Dollar=res_r.records[0].Rate_Researcher;record.Inkind=(parseFloat(record.Rate_Dollar)*parseFloat(record.FTE)/4).toFixed(0); break;
+                        case "Other": record.Rate_Dollar=res_r.records[0].Rate_Support;record.Inkind=(parseFloat(record.Rate_Dollar)*parseFloat(record.FTE)/4).toFixed(0); break;
+                        case "Student": record.Rate_Dollar=res_r.records[0].Rate_Student;record.Inkind=(parseFloat(record.Rate_Dollar)*parseFloat(record.FTE)/4).toFixed(0); break;
+                    }
+                });
+                jQuery.ajaxSetup({async:true});
+                //record.Locked='True';
+            }
+            /*
+          var d = new Date();
+            var month = d.getMonth()+1;
+            var day = d.getDate();
+            var output = d.getFullYear() + '/' +(month<10 ? '0' : '') + month + '/' +(day<10 ? '0' : '') + day;
+          record.Updated_by=g_user;
+          record.Updated_date=output;
+          */
+            //---------------------------
+
+        if(record.FTE!=='') dbv.V1=record.FTE;
+        if(record.Inkind!=='') dbv.V2=record.Inkind;
+        if(record.Financial_Year!=='') dbv.S1=record.Financial_Year;
+        if(record.Quarter!=='') dbv.S2=record.Quarter;
+        if(record.Participant!=='') dbv.S3=record.Participant;
+        if(record.Participant_uid!=='') dbv.PUID=record.Participant_uid;
+        if(record.Project_ID_uid!=='') dbv.V3=record.Project_ID_uid;
+        if(record.Locked===true) dbv.B1='1'; else dbv.B1='0';
+        dbv.PPID=participant_pid;
+            return true;
+        };
+        //---------------------------
+        var sites="";
+        $('#D__ID').on('load',function(){
+                sql_where="";
+            var sql="select List=@('Site_List') from [FORM-"+site_pid+"] where @('Login_Name')="+"'"+g_user+"'";
+            var req_data={cmd:'query_records',sql:sql};
+            jQuery.ajaxSetup({async:false});
+            $VmAPI.request({data:req_data,callback:function(res){
+              if(res.records.length>0){
+                  sites=res.records[0].List.replace(/\r/g,'\n').replace(/\n\n/g,'\n').replace(/\n/g,',');
+              }
+            }});
+            sql_where=" where B1=0";
+            jQuery.ajaxSetup({async:true});
+            grid_data();
+        });
+    }
+</script>
+<style>
+    VmInclude:__BASE__/vmiis/Common-Code/toolbar/toolbar_for_excel.css
+    #D__ID{
+        font-size:14px;
+        font-family: Helvetica, Arial, sans-serif;
+    }
+</style>
